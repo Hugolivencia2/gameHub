@@ -43,6 +43,9 @@ function Principal() {
               <li onClick={() => navigate("/dashboard-movil")}className="mobile-toggle-btn">
                 <FaMobileAlt className="menu-icon mobile-icon" /> Dashboard Móvil
               </li>
+              <li onClick={() => navigate("/registro")} className="menu-icon">
+                <FaMobileAlt className="menu-icon mobile-icon" /> Registro
+              </li>
             </ul>
           </nav>
         </div>

@@ -240,7 +240,7 @@ export default function ArticuloCompleto() {
                 
                 {mensaje && <span style={{ color: "#9146ff", fontSize: "0.9rem" }}>{mensaje}</span>}
                 
-                <button type="submit" className="publish-btn" style={{ alignSelf: "flex-start" }}>
+                <button type="submit" className="submit-coment" style={{ alignSelf: "flex-start" }}>
                   Publicar Comentario
                 </button>
               </form>

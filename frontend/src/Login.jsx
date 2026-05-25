@@ -1,7 +1,7 @@
 import React from "react";
 import "/src/Login.css";
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom'; 
+import { useNavigate, Link } from 'react-router-dom'; 
 import { IoMdClose } from "react-icons/io";
 import { FaInstagram, FaChrome, FaWifi } from "react-icons/fa";
 import { MdFilterCenterFocus } from "react-icons/md";
@@ -38,11 +38,14 @@ export default function Login() {
         const datos = await respuesta.json();
 
         // 3. GUARDAR EL PASE VIP: Almacenamos el token en el navegador
-        localStorage.setItem("gamehub_token", datos.access_token);
-        localStorage.setItem("gamehub_user", JSON.stringify(datos.usuario));
+        localStorage.setItem("token", datos.access_token);
+        localStorage.setItem("usuario", JSON.stringify(datos.usuario));
 
-        // 4. REDIRECCIÓN: Lo mandamos al Dashboard
-        navigate("/dashboard");
+        setMensajeError("¡Login correco! Redirigiendo...")
+        setTimeout(() => {
+          navigate("/dashboard");
+
+        }, 1500);
       } else {
         // Si el backend devuelve un 401 (Email o contraseña incorrectos)
         const errorDelBackend = await respuesta.json();
@@ -109,8 +112,11 @@ export default function Login() {
             y tu aceptas los <a href="#terms">Terms of Use</a> and{" "}
             <a href="#privacy">Privacy Policy</a>.
           </p>
-
+          
           <button type="submit" className="submit-btn">Continua con tu email</button>
+         <p style={{ textAlign: "center", marginTop: "15px", fontSize: "14px" }}>
+             ¿No tienes cuenta? <Link to="/registro" style={{ color: "#9146ff", textDecoration: "none" }}>Registrate aquí</Link>
+          </p>
         </form>
 
         {/* Login Social */}

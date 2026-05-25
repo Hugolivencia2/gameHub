@@ -1,0 +1,225 @@
+/* Contenedor que ocupa toda la pantalla y centra la tarjeta */
+.login-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background-color: #110d0d; /* Fondo oscuro base */
+  padding: 1rem;
+}
+
+/* --- SIDEBAR --- */
+.sidebar {
+  width: 250px;
+  background-color: #0d0909; /* Más oscuro para el menú */
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 2rem;
+  border-right: 1px solid #2a1f1f;
+  position: fixed; /* Para que no se mueva al hacer scroll */
+  height: 100vh;
+}
+
+.sidebar h2 {
+  font-size: 1.5rem;
+  margin-bottom: 2rem;
+  font-weight: 600;
+  letter-spacing: 1px;
+}
+
+.sidebar ul {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  align-items: start;
+  padding-left: 0;
+  gap: 1.5rem;
+}
+
+.sidebar li {
+  color: #a1a1aa;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 12px; 
+  font-size: 0.9rem;
+  transition: color 0.2s;
+  
+}
+
+.menu-icon{
+  font-size: 1.2rem;
+}
+
+.sidebar li:hover {
+  color: #ffffff;
+}
+
+
+
+.sidebar-bottom {
+  display: flex;
+  justify-content: space-between;
+}
+
+.text-btn {
+  background: none;
+  border: none;
+  color: #a1a1aa;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+/* La tarjeta principal con el brillo neón */
+.login-modal {
+  background-color: #1a1515;
+  width: 100%;
+
+  max-width: 420px;
+  border-radius: 12px;
+  padding: 2.5rem 2rem;
+  position: relative;
+  text-align: center;
+  color: #f8f8f2;
+  
+  /* Efecto de borde brillante morado */
+  border: 1px solid rgba(145, 70, 255, 0.6);
+  box-shadow: 0 0 20px 2px rgba(145, 70, 255, 0.2), inset 0 0 10px rgba(145, 70, 255, 0.1);
+}
+
+/* Botón de cerrar (X) */
+.close-btn {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  background: none;
+  border: none;
+  color: #a1a1aa;
+  font-size: 1.5rem;
+  cursor: pointer;
+  transition: color 0.3s;
+}
+
+.close-btn:hover {
+  color: #ffffff;
+}
+
+/* Textos de la cabecera */
+.brand-logo {
+  font-size: 0.85rem;
+  color: #a1a1aa;
+  margin-bottom: 0.5rem;
+  letter-spacing: 1px;
+}
+
+.login-header h2 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  line-height: 1.4;
+}
+
+.subtitle {
+  font-size: 0.9rem;
+  color: #a1a1aa;
+  margin-bottom: 2rem;
+  line-height: 1.5;
+}
+
+/* Formulario e Input */
+.input-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.auth-input {
+  width: 100%;
+  height: 45px;
+  background-color: transparent;
+  border: 1px solid #444;
+  border-radius: 6px;
+  color: #ffffff;
+  padding-left: 10px;
+  font-size: 1rem;
+  margin-bottom: 1rem;
+  outline: none;
+  transition: border-color 0.3s;
+}
+
+.auth-input:focus {
+  border-color: #9146FF; /* Se pone morado al hacer clic */
+}
+
+/* Texto legal */
+.legal-text {
+  font-size: 0.75rem;
+  color: #888;
+  line-height: 1.4;
+  margin-bottom: 1.5rem;
+  text-align: left;
+}
+
+.legal-text a {
+  color: #3b82f6; /* Color azul para los enlaces */
+  text-decoration: none;
+}
+
+.legal-text a:hover {
+  text-decoration: underline;
+}
+
+/* Botón principal */
+.submit-btn {
+  width: 100%;
+  background-color: #e5dada; /* Tono grisáceo claro */
+  color: #1a1a1a;
+  font-weight: 700;
+  font-size: 1rem;
+  padding: 0.9rem;
+  border: none;
+  border-radius: 25px;
+  cursor: pointer;
+  transition: opacity 0.2s;
+  margin-bottom: 2.5rem;
+}
+
+.submit-btn:hover {
+  opacity: 0.9;
+}
+
+/* Sección de Iconos Sociales */
+.social-title {
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+
+.social-icons {
+  display: flex;
+  justify-content: center;
+  gap: 1.2rem;
+}
+
+.icon-btn {
+  background: transparent;
+  border: 1px solid #444;
+  color: #a1a1aa;
+  border-radius: 12px;
+  width: 55px;
+  height: 45px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 1.3rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.icon-btn:hover {
+  border-color: #9146FF;
+  color: #ffffff;
+}

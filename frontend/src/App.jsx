@@ -12,17 +12,20 @@ import ArticuloCompleto from './ArticuloCompleto';
 import NoticiaDetalle from './NoticiaDetalle';
 import InicioMovil from './InicioMovil';
 import DashboardMovil from './DashboardMovile';
+import Registro  from './registro';
 
 // 1. TU CONMUTADOR DE RUTAS (Ajustado con tus nombres de importación)
 function RutaDashboard() {
-  const usuario = JSON.parse(localStorage.getItem("gamehub_user"));
+
+  const stringUsuario = localStorage.getItem("usuario");
+  const usuario = stringUsuario ? JSON.parse(stringUsuario) : null;
 
   if (!usuario) {
     // Si no hay usuario, lo correcto en React Router es forzar una navegación
     return <Navigate to="/login" replace />;
   }
 
-  if (usuario.rol === "Admin") {
+  if (usuario.rol === "Administrador") {
     // Devuelve tu componente de administrador
     return <Dashboard />; 
   } 
@@ -41,7 +44,7 @@ function App() {
         <Route path="/catalogo" element={<Catalogo />} />
         
         {/* LA SOLUCIÓN: Aquí es donde llamas a tu función */}
-        <Route path="/dashboard" element={<RutaDashboard />} />
+        <Route path="/dashboard" element={<Dashboard />} />
         
         {/* Nota: Puedes dejar esta ruta si quieres un acceso directo, pero /dashboard ya carga UserDashboard para usuarios normales */}
         <Route path="/perfil" element={<UserDashboard />} /> 
@@ -51,6 +54,7 @@ function App() {
         <Route path="/articulo/:id" element={<ArticuloCompleto />} />
         <Route path="/inicio-movil" element={<InicioMovil />} />
         <Route path='/dashboard-movil' element={<DashboardMovil/>}/>
+        <Route path='/registro' element={<Registro/>}/>
       </Routes>
     </BrowserRouter>
   );
