@@ -6,7 +6,7 @@ from mysql.connector import Error
 DB_CONFIG = {
     "host": "localhost",
     "user": "root",
-    "password": "TU_PASSWORD_MYSQL",
+    "password": "1234",
     "database": "gamehub",
     "port": 3306,
 }
