@@ -5,6 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 # Importamos tu enrutador
 from routers import usuarios
+from routers import comentarios
 
 app = FastAPI(title="Game-Hub API")
 
@@ -19,6 +20,7 @@ app.add_middleware(
 
 # Conectamos el módulo de usuarios a la aplicación principal
 app.include_router(usuarios.router)
+app.include_router(comentarios.router)
 
 @app.get("/")
 def ruta_raiz():

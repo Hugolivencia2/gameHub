@@ -1,6 +1,6 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import "/src/ArticuloCompleto.css";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams, Link } from "react-router-dom";
 
 // Iconos
 import {
@@ -17,43 +17,91 @@ import {
 import { MdDashboard } from "react-icons/md";
 
 export default function ArticuloCompleto() {
-  // Datos simulados estructurados en forma de HILO (Comentarios -> Respuestas)
-  const comentariosData = [
-    {
-      id: 1,
-      autor: "Usuario_Gamer_01",
-      tiempo: "Hace 3h",
-      texto:
-        "¡Menudo Juegazo! No puedo esperar a que salga la actualización de Prime. Ojalá metan el DLC gratuito.",
-      respuestas: [
-        {
-          id: 101,
-          autor: "Alex_Hunter",
-          tiempo: "Hace 2h",
-          texto:
-            "Totalmente de acuerdo, además leí en Twitter que van a solucionar el bug del inventario.",
-        },
-        {
-          id: 102,
-          autor: "Pro_Player99",
-          tiempo: "Hace 1h",
-          texto:
-            "Pues yo espero que no rompan el meta actual, que está bastante equilibrado.",
-        },
-      ],
-    },
-    {
-      id: 2,
-      autor: "SpeedRunner_99",
-      tiempo: "Hace 5h",
-      texto:
-        "Al contrario del pensamiento popular, el ritmo de la serie me parece un poco lento.",
-      respuestas: [], // Este comentario no tiene respuestas aún
-    },
-  ];
-
   const navigate = useNavigate();
+  
+  // 1. OBTENER EL ID DE LA NOTICIA (vital para saber qué comentarios pedir)
+  const { id } = useParams();
 
+  // 2. ESTADOS REACTIVOS
+  const [comentarios, setComentarios] = useState([]);
+  const [nuevoTexto, setNuevoTexto] = useState("");
+  const [mensaje, setMensaje] = useState("");
+
+  // Comprobar si hay usuario logueado en el almacenamiento local
+  const usuarioLogueado = JSON.parse(localStorage.getItem("gamehub_user"));
+
+  // 3. CARGAR LOS COMENTARIOS DEL BACKEND AL ENTRAR
+  useEffect(() => {
+    const cargarComentarios = async () => {
+      try {
+        const respuesta = await fetch(`http://localhost:8000/api/comentarios/${id}`);
+        if (respuesta.ok) {
+          const datos = await respuesta.json();
+          // Mapeamos los datos del servidor para que encajen en tu diseño visual
+          const comentariosFormateados = datos.map((c) => ({
+            id: c.id,
+            autor: c.autor,
+            tiempo: c.fecha, // El backend manda 'fecha', tu diseño usa 'tiempo'
+            texto: c.texto,
+            respuestas: [],  // Lo dejamos vacío para no romper tu renderizado de hilos
+          }));
+          setComentarios(comentariosFormateados);
+        }
+      } catch (error) {
+        console.error("Error al cargar comentarios:", error);
+      }
+    };
+
+    if (id) {
+      cargarComentarios();
+    }
+  }, [id]);
+
+  // 4. FUNCIÓN PARA ENVIAR UN NUEVO COMENTARIO
+  const handleEnviarComentario = async (e) => {
+    e.preventDefault();
+    setMensaje("Enviando...");
+
+    const token = localStorage.getItem("gamehub_token");
+    if (!token) return;
+
+    try {
+      const respuesta = await fetch("http://localhost:8000/api/comentarios/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          articulo_id: parseInt(id),
+          texto: nuevoTexto,
+        }),
+      });
+
+      if (respuesta.ok) {
+        const datos = await respuesta.json();
+        
+        // Formateamos el comentario recién creado para inyectarlo en la vista
+        const nuevoComentarioFormateado = {
+          id: datos.comentario.id,
+          autor: datos.comentario.autor,
+          tiempo: "Justo ahora", 
+          texto: datos.comentario.texto,
+          respuestas: [],
+        };
+
+        setComentarios([...comentarios, nuevoComentarioFormateado]); 
+        setNuevoTexto(""); 
+        setMensaje("¡Comentario publicado!");
+        setTimeout(() => setMensaje(""), 3000); 
+      } else {
+        setMensaje("Error al publicar el comentario.");
+      }
+    } catch (error) {
+      console.error("Error:", error);
+      setMensaje("Error de conexión.");
+    }
+  };
 
   return (
     <div className="layout">
@@ -63,7 +111,6 @@ export default function ArticuloCompleto() {
           <h2>GAME-HUB</h2>
           <nav>
             <ul>
-              {/* Ahora navigate sí funcionará perfectamente */}
               <li className="active" onClick={() => navigate("/")}>
                 <FaHome className="menu-icon" /> Inicio
               </li>
@@ -76,7 +123,7 @@ export default function ArticuloCompleto() {
               <li onClick={() => navigate("/Noticias")}>
                 <FaNewspaper className="menu-icon" /> Noticias
               </li>
-              <li onClick={() => navigate("/articulo/:id")}>
+              <li onClick={() => navigate("/articulo/1")}>
                 <FaComments className="menu-icon" /> Comentarios
               </li>
             </ul>
@@ -85,7 +132,7 @@ export default function ArticuloCompleto() {
         <div className="sidebar-user">
           <div className="user-info">
             <div className="avatar-square"></div>
-            <span>Nombre de usuario</span>
+            <span>{usuarioLogueado ? usuarioLogueado.username : "Invitado"}</span>
           </div>
           <FaRegBell className="bell-icon" />
         </div>
@@ -93,7 +140,6 @@ export default function ArticuloCompleto() {
 
       {/* --- CONTENIDO PRINCIPAL --- */}
       <main className="main-content">
-        {/* Cabecera del Artículo (Igual que antes) */}
         <header className="article-header">
           <h1 className="article-main-title">
             Prime Video se viste de gala para recibir un peliculón de Oscar y
@@ -104,19 +150,18 @@ export default function ArticuloCompleto() {
           </div>
           <div className="article-meta-bar">
             <div className="meta-item">
-              <FaUser className="meta-icon" /> <span>Por: Nombre Autor</span>
+              <FaUser className="meta-icon" /> <span>Por: Redacción</span>
             </div>
             <div className="meta-item">
               <FaCalendarAlt className="meta-icon" />{" "}
-              <span>Actualizado: día/mes/año XX:XX</span>
+              <span>Actualizado: 25/05/2026</span>
             </div>
             <div className="meta-item">
-              <FaCommentDots className="meta-icon" /> <span>3 Comentarios</span>
+              <FaCommentDots className="meta-icon" /> <span>{comentarios.length} Comentarios</span>
             </div>
           </div>
         </header>
 
-        {/* Cuerpo del Artículo (Igual que antes) */}
         <section className="article-body">
           <p>
             Lorem ipsum es simplemente el texto de relleno de las imprentas y
@@ -125,53 +170,90 @@ export default function ArticuloCompleto() {
         </section>
 
         {/* =========================================
-           SECCIÓN DE COMENTARIOS CON RESPUESTAS
+           SECCIÓN DE COMENTARIOS 
         ========================================= */}
         <section className="comments-section">
           <h2 className="comments-count">
-            Comentarios <span>03 comentarios</span>
+            Comentarios <span>{comentarios.length < 10 ? `0${comentarios.length}` : comentarios.length} comentarios</span>
           </h2>
           <hr className="divider" />
 
+          {/* LISTA DINÁMICA DE COMENTARIOS */}
           <div className="comments-list">
-            {comentariosData.map((comment) => (
-              <div key={comment.id} className="comment-thread">
-                {/* 1. COMENTARIO PRINCIPAL */}
-                <div className="comment-card">
-                  <div className="comment-avatar"></div>
-                  <div className="comment-content">
-                    <div className="comment-header">
-                      <h4>{comment.autor}</h4>
-                      <span className="comment-time">{comment.tiempo}</span>
-                    </div>
-                    <p>{comment.texto}</p>
-                    <button className="reply-action-btn">
-                      <FaReply /> Responder
-                    </button>
-                  </div>
-                </div>
-
-                {/* 2. HILO DE RESPUESTAS (Se renderiza solo si el array tiene elementos) */}
-                {comment.respuestas && comment.respuestas.length > 0 && (
-                  <div className="replies-container">
-                    {comment.respuestas.map((reply) => (
-                      <div key={reply.id} className="comment-card reply-card">
-                        {/* Avatar un pelín más pequeño para la respuesta */}
-                        <div className="comment-avatar reply-avatar"></div>
-                        <div className="comment-content">
-                          <div className="comment-header">
-                            <h4>{reply.autor}</h4>
-                            <span className="comment-time">{reply.tiempo}</span>
-                          </div>
-                          <p>{reply.texto}</p>
-                        </div>
+            {comentarios.length === 0 ? (
+              <p style={{ color: "#888", fontStyle: "italic", marginBottom: "2rem" }}>
+                No hay comentarios aún. ¡Sé el primero en opinar!
+              </p>
+            ) : (
+              comentarios.map((comment) => (
+                <div key={comment.id} className="comment-thread">
+                  {/* COMENTARIO PRINCIPAL */}
+                  <div className="comment-card">
+                    <div className="comment-avatar"></div>
+                    <div className="comment-content">
+                      <div className="comment-header">
+                        <h4>{comment.autor}</h4>
+                        <span className="comment-time">{comment.tiempo}</span>
                       </div>
-                    ))}
+                      <p>{comment.texto}</p>
+                      <button className="reply-action-btn">
+                        <FaReply /> Responder
+                      </button>
+                    </div>
                   </div>
-                )}
-              </div>
-            ))}
+
+                  {/* HILO DE RESPUESTAS */}
+                  {comment.respuestas && comment.respuestas.length > 0 && (
+                    <div className="replies-container">
+                      {comment.respuestas.map((reply) => (
+                        <div key={reply.id} className="comment-card reply-card">
+                          <div className="comment-avatar reply-avatar"></div>
+                          <div className="comment-content">
+                            <div className="comment-header">
+                              <h4>{reply.autor}</h4>
+                              <span className="comment-time">{reply.tiempo}</span>
+                            </div>
+                            <p>{reply.texto}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ))
+            )}
           </div>
+
+          {/* CAJA DE TEXTO PARA NUEVOS COMENTARIOS */}
+          <div style={{ marginTop: "3rem" }}>
+            {usuarioLogueado ? (
+              <form onSubmit={handleEnviarComentario} style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+                <textarea
+                  className="dark-input"
+                  rows="3"
+                  placeholder="Añade un comentario a la discusión..."
+                  value={nuevoTexto}
+                  onChange={(e) => setNuevoTexto(e.target.value)}
+                  required
+                  style={{ width: "100%", resize: "vertical", padding: "15px" }}
+                ></textarea>
+                
+                {mensaje && <span style={{ color: "#9146ff", fontSize: "0.9rem" }}>{mensaje}</span>}
+                
+                <button type="submit" className="publish-btn" style={{ alignSelf: "flex-start" }}>
+                  Publicar Comentario
+                </button>
+              </form>
+            ) : (
+              <div style={{ textAlign: "center", padding: "2rem", background: "rgba(255,255,255,0.05)", borderRadius: "10px" }}>
+                <p style={{ marginBottom: "1rem", color: "#aaa" }}>Debes iniciar sesión para unirte a la conversación.</p>
+                <Link to="/login">
+                  <button className="publish-btn">Ir a Iniciar Sesión</button>
+                </Link>
+              </div>
+            )}
+          </div>
+
         </section>
       </main>
     </div>
