@@ -24,6 +24,11 @@ class PerfilUpdateData(BaseModel):
     username: str
     website: str | None = None
     sobre_mi: str | None = None
+    
+class RegistroData(BaseModel):
+    username: str
+    email: str
+    password: str
 
 # 4. DEPENDENCIAS DE SEGURIDAD (Las barreras invisibles)
 
@@ -66,6 +71,64 @@ def verificar_admin(authorization: str = Header(...)):
 def obtener_todos_los_usuarios():
     return usuarios_db
 
+@router.put("/perfil")
+def actualizar_perfil(datos: PerfilUpdateData, usuario_id: int = Depends(obtener_usuario_autenticado)):
+    usuario_encontrado = None
+    for u in usuarios_db:
+        if u["id"] == usuario_id:
+            usuario_encontrado = u
+            break
+
+    if not usuario_encontrado:
+        raise HTTPException(status_code=404, detail="El usuario no existe")
+
+    usuario_encontrado["username"] = datos.username
+    usuario_encontrado["website"] = datos.website
+    usuario_encontrado["sobre_mi"] = datos.sobre_mi
+
+    return {"mensaje": "Perfil actualizado", "usuario": usuario_encontrado}
+
+@router.get("/perfil")
+def ver_mi_perfil(usuario_id: int = Depends(obtener_usuario_autenticado)):
+    # Buscamos al usuario en tu base de datos simulada
+    usuario_encontrado = None
+    for u in usuarios_db:
+        if u["id"] == usuario_id:
+            usuario_encontrado = u
+            break
+            
+    if not usuario_encontrado:
+        raise HTTPException(status_code=404, detail="Usuario no encontrado")
+
+    # Devolvemos los datos exactamente con los nombres que espera tu Dashboard.jsx
+    return {
+        "mensaje": f"¡Bienvenido a la zona VIP, {usuario_encontrado['username']}!",
+        "email_registrado": usuario_encontrado["email"],
+        "biografia": usuario_encontrado.get("sobre_mi", "Sin biografía"),
+        "rol": usuario_encontrado["rol"]
+    }
+    
+@router.post("/registro")
+def registrar_usuario(datos: RegistroData):
+    # 1. Comprobamos si el email ya existe para no crear duplicados
+    for u in usuarios_db:
+        if u["email"] == datos.email:
+            raise HTTPException(status_code=400, detail="Este email ya está registrado")
+            
+    # 2. Creamos el nuevo usuario simulando una base de datos
+    nuevo_id = len(usuarios_db) + 1
+    nuevo_usuario = {
+        "id": nuevo_id,
+        "username": datos.username,
+        "email": datos.email,
+        "rol": "Suscriptor" # Por defecto, los nuevos son usuarios normales
+    }
+    
+    # Añadimos el usuario a nuestra lista simulada
+    usuarios_db.append(nuevo_usuario)
+    
+    return {"mensaje": "Usuario creado correctamente", "usuario": nuevo_usuario}
+
 @router.get("/{usuario_id}")
 def obtener_usuario_por_id(usuario_id: int):
     for u in usuarios_db:
@@ -94,22 +157,7 @@ def iniciar_sesion(datos: LoginData):
     token = jwt.encode(datos_token, SECRET_KEY, algorithm=ALGORITHM)
     return {"access_token": token, "token_type": "bearer", "usuario": usuario_encontrado}
 
-@router.put("/perfil")
-def actualizar_perfil(datos: PerfilUpdateData, usuario_id: int = Depends(obtener_usuario_autenticado)):
-    usuario_encontrado = None
-    for u in usuarios_db:
-        if u["id"] == usuario_id:
-            usuario_encontrado = u
-            break
 
-    if not usuario_encontrado:
-        raise HTTPException(status_code=404, detail="El usuario no existe")
-
-    usuario_encontrado["username"] = datos.username
-    usuario_encontrado["website"] = datos.website
-    usuario_encontrado["sobre_mi"] = datos.sobre_mi
-
-    return {"mensaje": "Perfil actualizado", "usuario": usuario_encontrado}
 
 # Endpoint protegido SOLO para Administradores
 @router.delete("/noticias/{id}")

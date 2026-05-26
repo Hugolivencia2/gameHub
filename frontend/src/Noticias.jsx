@@ -1,151 +1,238 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import "/src/Noticias.css";
 import { useNavigate } from "react-router-dom";
-// Importamos los iconos
-import {
-  FaHome,
-  FaGamepad,
-  FaNewspaper,
-  FaComments,
-  FaRegBell,
-  FaBell,
-} from "react-icons/fa";
+import { FaHome, FaGamepad, FaNewspaper, FaComments, FaMobileAlt, FaUserCircle } from "react-icons/fa";
 import { MdDashboard } from "react-icons/md";
 
-export default function Noticias() {
-  // Datos simulados estructurados por tipo ('destacada' o 'lista')
-  const noticiasData = [
-    {
-      id: 1,
-      type: "destacada",
-      title:
-        "Prime Video se viste de gala para recibir un peliculón de Oscar y más de 40 estrenos que te mantendrán ocupado todo el finde",
-      imagePlaceholder: "bg-prime",
-    },
-    {
-      id: 2,
-      type: "lista",
-      title:
-        "Esta aventura narrativa es para muchos uno de los mejores juegos del año: Es una carta de amor a la música de los 90",
-      stars: "5 estrellas - Descripción",
-      meta: "Genero - Autor",
-      imagePlaceholder: "bg-narrativa",
-    },
-    {
-      id: 3,
-      type: "lista",
-      title:
-        "Ahora que Final Fantasy VII Remake Parte 3 está cerca de anunciarse, Square Enix recuerda que la única manera de recrear el JRPG era con una trilogía",
-      stars: "5 estrellas - Descripción",
-      meta: "Genero - Autor",
-      imagePlaceholder: "bg-ff7",
-    },
-    {
-      id: 4,
-      type: "destacada",
-      title:
-        "Si me obligan a redirigir mi carrera profesional este juego me ha enseñado lo que quiero hacer, y no es irme a plantar tomates al pueblo",
-      imagePlaceholder: "bg-tomates",
-    },
-    {
-      id: 5,
-      type: "lista",
-      title:
-        "Helldivers 2 vuelve a caer al abismo en Steam con más de 10.000 reseñas negativas, pero hay un plan para darle la vuelta a la situación",
-      stars: "5 estrellas - Descripción",
-      meta: "Genero - Autor",
-      imagePlaceholder: "bg-helldivers",
-    },
-  ];
+const API_URL = "http://localhost:8000";
 
+export default function Noticias() {
   const navigate = useNavigate();
-  
+  const [noticias, setNoticias] = useState([]);
+  const [cargando, setCargando] = useState(true);
+  const [error, setError] = useState("");
+  const [editandoId, setEditandoId] = useState(null);
+  const [formEdicion, setFormEdicion] = useState({
+    titulo: "",
+    contenido: "",
+    imagen: "",
+    estado: "publicada",
+    id_categoria: "",
+  });
+
+  // Comprobamos si hay usuario logueado para la sidebar
+  const stringUsuario = localStorage.getItem("usuario");
+  const usuario = stringUsuario ? JSON.parse(stringUsuario) : null;
+
+  const cargarNoticias = async () => {
+    setCargando(true);
+    setError("");
+
+    try {
+      // CORRECCIÓN 1: Cambiado a singular (/api/noticia/)
+      const respuesta = await fetch(`${API_URL}/api/noticia/`);
+      if (!respuesta.ok) {
+        throw new Error("No se pudieron cargar las noticias");
+      }
+      const datos = await respuesta.json();
+      setNoticias(datos);
+    } catch (err) {
+      console.error(err);
+      setError("Error al cargar noticias.");
+    } finally {
+      setCargando(false);
+    }
+  };
+
+  useEffect(() => {
+    cargarNoticias();
+  }, []);
+
+  const iniciarEdicion = (noticia) => {
+    setEditandoId(noticia.id_noticia);
+    setFormEdicion({
+      titulo: noticia.titulo || "",
+      contenido: noticia.contenido || "",
+      imagen: noticia.imagen || "",
+      estado: noticia.estado || "publicada",
+      id_categoria: noticia.id_categoria || "",
+    });
+  };
+
+  const cancelarEdicion = () => {
+    setEditandoId(null);
+    setFormEdicion({ titulo: "", contenido: "", imagen: "", estado: "publicada", id_categoria: "" });
+  };
+
+  const guardarEdicion = async (id) => {
+    try {
+      // CORRECCIÓN 2: Cambiado a singular (/api/noticia/${id})
+      const respuesta = await fetch(`${API_URL}/api/noticia/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...formEdicion,
+          id_categoria: formEdicion.id_categoria ? Number(formEdicion.id_categoria) : null,
+        }),
+      });
+
+      if (!respuesta.ok) {
+        throw new Error("No se pudo editar la noticia");
+      }
+
+      cancelarEdicion();
+      cargarNoticias();
+    } catch (err) {
+      console.error(err);
+      alert("Error al editar la noticia.");
+    }
+  };
+
+  const eliminarNoticia = async (id) => {
+    const confirmar = window.confirm("¿Seguro que quieres eliminar esta noticia?");
+    if (!confirmar) return;
+
+    try {
+      // CORRECCIÓN 3: Cambiado a singular (/api/noticia/${id})
+      const respuesta = await fetch(`${API_URL}/api/noticia/${id}`, {
+        method: "DELETE",
+      });
+
+      if (!respuesta.ok) {
+        throw new Error("No se pudo eliminar la noticia");
+      }
+
+      cargarNoticias();
+    } catch (err) {
+      console.error(err);
+      alert("Error al eliminar la noticia.");
+    }
+  };
+
   return (
     <div className="layout">
-      {/* --- MENÚ LATERAL --- */}
+      {/* --- MENÚ LATERAL (SIDEBAR) --- */}
       <aside className="sidebar">
         <div className="sidebar-top">
           <h2>GAME-HUB</h2>
           <nav>
             <ul>
-              {/* Ahora navigate sí funcionará perfectamente */}
-              <li className="active" onClick={() => navigate("/")}>
-                <FaHome className="menu-icon" /> Inicio
-              </li>
-              <li onClick={() => navigate("/dashboard")}>
-                <MdDashboard className="menu-icon" /> DashBoard
-              </li>
-              <li onClick={() => navigate("/catalogo")}>
-                <FaGamepad className="menu-icon" /> Catálogo/Ranking
-              </li>
-              <li onClick={() => navigate("/Noticias")}>
-                <FaNewspaper className="menu-icon" /> Noticias
-              </li>
-              <li onClick={() => navigate("/articulo/:id")}>
-                <FaComments className="menu-icon" /> Comentarios
-              </li>
+              <li onClick={() => navigate("/")}><FaHome className="menu-icon" /> Inicio</li>
+              <li onClick={() => navigate("/dashboard")}><MdDashboard className="menu-icon" /> DashBoard</li>
+              <li onClick={() => navigate("/catalogo")}><FaGamepad className="menu-icon" /> Catálogo/Ranking</li>
+              <li className="active" onClick={() => navigate("/noticias")}><FaNewspaper className="menu-icon" /> Noticias</li>
+              <li onClick={() => navigate("/articulo/1")}><FaComments className="menu-icon" /> Comentarios</li>
             </ul>
           </nav>
         </div>
-
-        {/* Usuario logueado */}
-        <div className="sidebar-user">
-          <div className="user-info">
-            <div className="avatar-square"></div>
-            <span className="texto-avatar" onClick={() => navigate("/perfil")}>Nombre de usuario</span>
-          </div>
-          <FaBell className="bell-icon" />
+        
+        {/* Lógica de usuario en la barra inferior de la sidebar */}
+        <div className="sidebar-bottom">
+          {usuario ? (
+            <div className="user-logged-in" style={{ textAlign: "center", padding: "10px", width: "100%" }}>
+              <FaUserCircle size={30} style={{ color: "#9146ff", marginBottom: "5px" }} />
+              <p style={{ color: "white", margin: "0 0 10px 0", fontSize: "14px" }}>
+                Hola, <strong>{usuario.username}</strong>
+              </p>
+              <button className="text-btn" onClick={() => navigate("/dashboard")} style={{ color: "#9146ff" }}>
+                Ir a mi panel
+              </button>
+            </div>
+          ) : (
+            <>
+              <button className="text-btn" onClick={() => navigate("/registro")}>Registro</button>
+              <button className="text-btn" onClick={() => navigate("/login")}>Acceder</button>
+            </>
+          )}
         </div>
       </aside>
 
       {/* --- CONTENIDO PRINCIPAL --- */}
       <main className="main-content">
         <h1 className="section-title">Noticias</h1>
+        <p style={{ color: "#888", marginBottom: "2rem" }}>Noticias conectadas a la base de datos MySQL.</p>
 
-        {/* Mapeo de noticias */}
-        <div className="news-feed">
-          {noticiasData.map((noticia) => (
-            <React.Fragment key={noticia.id}>
-              {/* Plantilla para Noticia Destacada (Grande) */}
-              {noticia.type === "destacada" && (
-                <article className="news-featured"
-                  onClick={() => navigate("/noticia-detalle")}
-                  style={{cursor: "pointer"}}
-                >
-                  <div
-                    className={`featured-img ${noticia.imagePlaceholder}`}
-                  ></div>
-                  <h2 className="featured-title">{noticia.title}</h2>
-                </article>
-              )}
+        {cargando && <p>Cargando noticias...</p>}
+        {error && <p style={{ color: "#ff6b6b" }}>{error}</p>}
 
-              {/* Plantilla para Noticia en Lista (Pequeña) */}
-              {noticia.type === "lista" && (
-                <article
-                  className="news-list-item"
-                  onClick={() =>
-                    navigate(`/articulo/${noticia.id}`)
-                  } /* <--- AQUÍ LA MAGIA */
-                  style={{
-                    cursor: "pointer",
-                  }} /* Esto hace que el ratón cambie a la manita al pasar por encima */
-                >
-                  <div className={`list-img ${noticia.imagePlaceholder}`}></div>
-                  <div className="list-content">
-                    <h4>{noticia.title}</h4>
-                    <div className="list-meta">
-                      <p className="stars">{noticia.stars}</p>
-                      <span className="meta">{noticia.meta}</span>
+        {/* Cambiado a .news-feed para coincidir con tu CSS */}
+        <section className="news-feed">
+          {noticias.map((noticia, index) => (
+            <React.Fragment key={noticia.id_noticia}>
+              
+              {/* Añadimos una línea separadora entre noticias (excepto antes de la primera) */}
+              {index > 0 && <hr className="news-divider" />}
+
+              {/* Cambiado a .news-list-item para que use Flexbox y alinee la imagen al lado */}
+              <article className="news-list-item">
+                
+                {editandoId === noticia.id_noticia ? (
+                  <div className="edit-form" style={{ width: "100%", display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+                    <input
+                      value={formEdicion.titulo}
+                      onChange={(e) => setFormEdicion({ ...formEdicion, titulo: e.target.value })}
+                      placeholder="Título"
+                    />
+                    <textarea
+                      value={formEdicion.contenido}
+                      onChange={(e) => setFormEdicion({ ...formEdicion, contenido: e.target.value })}
+                      placeholder="Contenido"
+                      rows="5"
+                    />
+                    <input
+                      value={formEdicion.imagen}
+                      onChange={(e) => setFormEdicion({ ...formEdicion, imagen: e.target.value })}
+                      placeholder="URL o ruta de imagen"
+                    />
+                    <select
+                      value={formEdicion.estado}
+                      onChange={(e) => setFormEdicion({ ...formEdicion, estado: e.target.value })}
+                    >
+                      <option value="borrador">Borrador</option>
+                      <option value="publicada">Publicada</option>
+                      <option value="archivada">Archivada</option>
+                    </select>
+                    <div style={{ display: "flex", gap: "0.5rem", marginTop: "0.75rem" }}>
+                      <button onClick={() => guardarEdicion(noticia.id_noticia)}>Guardar</button>
+                      <button onClick={cancelarEdicion}>Cancelar</button>
                     </div>
                   </div>
-                </article>
-              )}
+                ) : (
+                  <>
+                    {/* Contenedor de la Imagen a la izquierda (.list-img) */}
+                    <div 
+                      className="list-img" 
+                      style={{ backgroundImage: noticia.imagen ? `url(${noticia.imagen})` : 'linear-gradient(45deg, #1a1515, #2a1f1f)' }}
+                      onClick={() => navigate(`/articulo/${noticia.id_noticia}`)}
+                    />
 
-              {/* Separador entre noticias */}
-              <hr className="news-divider" />
+                    {/* Contenedor del Contenido a la derecha (.list-content) */}
+                    <div className="list-content">
+                      <div onClick={() => navigate(`/articulo/${noticia.id_noticia}`)} style={{ cursor: "pointer" }}>
+                        <h4>{noticia.titulo}</h4>
+                        <p style={{ color: "#cccccc", fontSize: "0.9rem", marginTop: "0.5rem" }}>
+                          {noticia.contenido?.slice(0, 180)}...
+                        </p>
+                      </div>
+                      
+                      {/* Metadatos y botones abajo alineados */}
+                      <div className="list-meta">
+                        <div className="stars">Hace un momento</div>
+                        <div className="meta">
+                          Autor: {noticia.autor || "Sin autor"} | Categoría: {noticia.categoria || "Sin categoría"}
+                        </div>
+                        <div style={{ display: "flex", gap: "0.5rem", marginTop: "0.75rem", justifyContent: "flex-end" }}>
+                          <button className="text-btn" onClick={() => iniciarEdicion(noticia)} style={{ fontSize: "0.85rem", color: "#ffd700" }}>Editar</button>
+                          <button className="text-btn" onClick={() => eliminarNoticia(noticia.id_noticia)} style={{ fontSize: "0.85rem", color: "#ff4444" }}>Eliminar</button>
+                        </div>
+                      </div>
+                    </div>
+                  </>
+                )}
+              </article>
             </React.Fragment>
           ))}
-        </div>
+        </section>
       </main>
     </div>
   );

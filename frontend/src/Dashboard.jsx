@@ -30,7 +30,7 @@ export default function Dashboard() {
     { id: 3, nombre: "Pro_Player99" },
   ];
 
- useEffect(() => {
+  useEffect(() => {
     const token = localStorage.getItem("token");
 
     // 1. CORRECCIÓN: Si no hay token, te mandamos a la ruta "/login" (NO a una frase)
@@ -48,18 +48,17 @@ export default function Dashboard() {
             headers: {
               Authorization: `Bearer ${token}`,
             },
-          }
+          },
         );
 
         if (respuesta.ok) {
           const data = await respuesta.json();
-          
+
           setDatosUsuario(data);
         } else {
           const errorDelBackend = await respuesta.json();
           // 2. CORRECCIÓN: Usamos comillas invertidas (backticks) para inyectar la variable
-          setError(`Python dice: ${errorDelBackend.detail}`);
-          
+          setError(`Python dice: ${JSON.stringify(errorDelBackend)}`);
           // Mantenemos bloqueado el navigate para que, si falla, puedas leer las letras rojas
         }
       } catch (error) {
@@ -75,9 +74,26 @@ export default function Dashboard() {
     navigate("/login");
   };
 
-  if (error) return <div style={{ color: "#ff4444", textAlign: "center", marginTop: "50px", fontSize: "24px" }}>🚨 {error}</div>;
+  if (error)
+    return (
+      <div
+        style={{
+          color: "#ff4444",
+          textAlign: "center",
+          marginTop: "50px",
+          fontSize: "24px",
+        }}
+      >
+        🚨 {error}
+      </div>
+    );
 
-  if (!datosUsuario && !error) return <div style={{ color: "white", textAlign: "center", marginTop: "50px" }}>Cargando zona VIP...</div>;
+  if (!datosUsuario && !error)
+    return (
+      <div style={{ color: "white", textAlign: "center", marginTop: "50px" }}>
+        Cargando zona VIP...
+      </div>
+    );
 
   return (
     <div className="layout">
@@ -106,7 +122,11 @@ export default function Dashboard() {
           </nav>
         </div>
         <div className="sidebar-bottom">
-          <button className="text-btn" onClick={handleLogout} style={{color: "#ff4444"}}>
+          <button
+            className="text-btn"
+            onClick={handleLogout}
+            style={{ color: "#ff4444" }}
+          >
             Cerrar Sesión
           </button>
         </div>
@@ -114,7 +134,6 @@ export default function Dashboard() {
 
       {/* --- CONTENIDO PRINCIPAL --- */}
       <main className="main-content">
-        
         {/* SECCIÓN 1: PERFIL */}
         <h1 className="section-title">Profile</h1>
         <div className="neon-card">
@@ -131,21 +150,29 @@ export default function Dashboard() {
               <div className="form-row">
                 <div className="input-group">
                   <label>Email de registro</label>
-                  <p className="dark-input" style={{margin: 0, padding: "10px"}}>{datosUsuario?.email_registrado}</p>
+                  <p
+                    className="dark-input"
+                    style={{ margin: 0, padding: "10px" }}
+                  >
+                    {datosUsuario?.email_registrado}
+                  </p>
                 </div>
                 <div className="input-group">
                   <label>Rol actual</label>
-                  <p className="dark-input" style={{margin: 0, padding: "10px", color: "#9146ff"}}>
+                  <p
+                    className="dark-input"
+                    style={{ margin: 0, padding: "10px", color: "#9146ff" }}
+                  >
                     <strong>{usuarioGuardado?.rol || "Desconocido"}</strong>
                   </p>
                 </div>
               </div>
               <div className="input-group full-width">
                 <label>Sobre mi</label>
-                <textarea 
-                  className="dark-input" 
-                  rows="3" 
-                  defaultValue={datosUsuario?.biografia || ""} 
+                <textarea
+                  className="dark-input"
+                  rows="3"
+                  defaultValue={datosUsuario?.biografia || ""}
                   placeholder="Aún no hay biografía..."
                 />
               </div>
@@ -172,11 +199,17 @@ export default function Dashboard() {
                     </div>
 
                     <div className="user-actions">
-                      <button className="action-btn"><MdOutlineModeEdit /></button>
+                      <button className="action-btn">
+                        <MdOutlineModeEdit />
+                      </button>
                       <div className="action-separator"></div>
-                      <button className="action-btn"><FaRegStar /></button>
+                      <button className="action-btn">
+                        <FaRegStar />
+                      </button>
                       <div className="action-separator"></div>
-                      <button className="action-btn delete"><FaRegTrashAlt /></button>
+                      <button className="action-btn delete">
+                        <FaRegTrashAlt />
+                      </button>
                     </div>
                   </div>
                 ))}

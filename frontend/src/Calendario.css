@@ -1,0 +1,127 @@
+/* --- CONTENIDO ESPECÍFICO DEL CALENDARIO --- */
+.calendar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #0d0909;
+  padding: 1.5rem;
+  border: 1px solid #2a1f1f;
+  border-radius: 8px 8px 0 0;
+  margin-top: 1rem;
+}
+
+.calendar-header h2 {
+  margin: 0;
+  font-size: 1.5rem;
+  color: #ffffff;
+  text-transform: capitalize;
+}
+
+.calendar-nav-btn {
+  background-color: #1a1515;
+  border: 1px solid #2a1f1f;
+  color: #9146ff;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 0.2s;
+}
+
+.calendar-nav-btn:hover {
+  background-color: #9146ff;
+  color: #ffffff;
+}
+
+/* --- LA CUADRÍCULA (GRID) --- */
+.calendar-grid-container {
+  border: 1px solid #2a1f1f;
+  border-top: none;
+  border-radius: 0 0 8px 8px;
+  overflow: hidden;
+}
+
+.calendar-days-header {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  background-color: #1a1515;
+  border-bottom: 1px solid #2a1f1f;
+}
+
+.calendar-days-header span {
+  padding: 1rem;
+  text-align: center;
+  font-weight: 600;
+  color: #a1a1aa;
+  font-size: 0.9rem;
+}
+
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  background-color: #2a1f1f; /* Color de las líneas separadoras */
+  gap: 1px; /* Crea las líneas entre celdas */
+}
+
+.calendar-cell {
+  background-color: #0d0909;
+  min-height: 120px;
+  padding: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  transition: background-color 0.2s;
+}
+
+.calendar-cell:hover {
+  background-color: #1a1515;
+}
+
+.calendar-cell.empty {
+  background-color: #080606; /* Días vacíos de otros meses */
+}
+
+.cell-number {
+  align-self: flex-end;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #a1a1aa;
+  margin-bottom: 0.5rem;
+}
+
+.calendar-cell.today .cell-number {
+  background-color: #9146ff;
+  color: white;
+  width: 25px;
+  height: 25px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+}
+
+/* --- ETIQUETAS DE LOS EVENTOS --- */
+.event-badge {
+  background-color: rgba(145, 70, 255, 0.2);
+  border-left: 3px solid #9146ff;
+  color: #e5e5e5;
+  padding: 0.3rem 0.5rem;
+  font-size: 0.75rem;
+  border-radius: 0 4px 4px 0;
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: background-color 0.2s;
+}
+
+.event-badge:hover {
+  background-color: rgba(145, 70, 255, 0.4);
+}
+
+.event-badge.important {
+  border-left-color: #ff4444;
+  background-color: rgba(255, 68, 68, 0.1);
+}

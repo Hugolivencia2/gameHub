@@ -1,180 +1,142 @@
-/* --- RESET BÁSICO --- */
-html, body, #root {
-  margin: 0;
-  padding: 0;
-  width: 100%;
-  min-height: 100vh;
-  box-sizing: border-box;
-  background-color: #1a1515;
-  color: #f8f8f2;
-  overflow-x: hidden; /* Esto es clave: evita que aparezca una barra de scroll horizontal */
+/* =========================================
+   ESTILOS ESPECÍFICOS DEL CATÁLOGO / RANKING
+========================================= */
+
+.catalogo-header h1 {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
 }
 
-*, *::before, *::after {
-  box-sizing: inherit;
-  font-family: 'Inter', sans-serif;
-}
-
-body {
-  background-color: #1a1515; /* Tono oscuro rojizo del fondo */
-  color: #f8f8f2;
-
-}
-
-/* --- LAYOUT PRINCIPAL (Sidebar + Main) --- */
-.layout {
-    display: flex;
-    min-height: 100vh;
-    width: 100%;
-}
-
-/* --- SIDEBAR --- */
-.sidebar {
-  width: 250px;
-  background-color: #0d0909; /* Más oscuro para el menú */
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  padding: 2rem;
-  border-right: 1px solid #2a1f1f;
-  position: fixed; /* Para que no se mueva al hacer scroll */
-  height: 100vh;
-}
-
-.sidebar h2 {
-  font-size: 1.5rem;
-  margin-bottom: 2rem;
-  font-weight: 600;
-  letter-spacing: 1px;
-}
-
-.sidebar ul {
-  list-style: none;
-  display: flex;
-  flex-direction: column;
-  align-items: start;
-  padding-left: 0;
-  gap: 1.5rem;
-}
-
-.sidebar li {
+.catalogo-header p {
   color: #a1a1aa;
+  margin-bottom: 1.5rem;
+}
+
+/* Selector de ordenamiento moderno */
+.catalogo-header select {
+  background-color: #0d0909;
+  color: white;
+  border: 1px solid #2a1f1f;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  outline: none;
   cursor: pointer;
+  font-size: 0.9rem;
+  transition: border-color 0.2s;
+}
+
+.catalogo-header select:focus {
+  border-color: #9146ff;
+}
+
+/* Lista de juegos en formato vertical limpio */
+.games-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  width: 100%;
+}
+
+/* Tarjeta de cada juego */
+.game-card {
   display: flex;
   align-items: center;
-  gap: 12px; 
-  font-size: 0.9rem;
-  transition: color 0.2s;
-  
-}
-
-.menu-icon{
-  font-size: 1.2rem;
-}
-
-.sidebar li:hover {
-  color: #ffffff;
-}
-
-
-
-.sidebar-bottom {
-  display: flex;
-  justify-content: space-between;
-}
-
-.text-btn {
-  background: none;
-  border: none;
-  color: #a1a1aa;
-  cursor: pointer;
-  font-size: 0.9rem;
-}
-
-/* --- CONTENIDO PRINCIPAL --- */
-.main-content {
-  margin-left: 250px; /* Deja espacio para el menú fijo */
-  padding: 2rem;
-  width: calc(100% - 250px);
-  display: flex;
-  flex-direction: column;
+  background-color: #0d0909;
+  border: 1px solid #2a1f1f;
+  border-radius: 8px;
+  padding: 1.5rem;
   gap: 2rem;
+  transition: transform 0.2s, border-color 0.2s;
 }
 
-.hero-banner {
-  color:white;
-  border-radius: 4px;
-  overflow: hidden;
-  text-align: left;
+.game-card:hover {
+  border-color: rgba(145, 70, 255, 0.6);
+  transform: translateY(-2px);
+}
+
+/* Puesto del ranking en grande (#1, #2...) */
+.game-rank {
+  font-size: 2rem;
+  font-weight: 800;
+  color: #9146ff; /* Color morado Twitch/Gaming */
+  min-width: 60px;
+  text-align: center;
+}
+
+/* Contenedor de la imagen */
+.game-image {
+  width: 120px;
+  height: 160px;
   background-color: #1a1515;
-}
-
-.banner-text{
-  color: white;
-  padding: 20px;
-  padding-bottom: 100px;
-}
-
-.banner-img {
-  background: linear-gradient(45deg, #ff9900, #ff5500); /* Simula el fondo de Prime */
-  height: 500px;
+  border-radius: 6px;
+  overflow: hidden;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: white;
-  font-size: 3rem;
-  font-weight: bold;
+  flex-shrink: 0;
+  border: 1px solid #2a1f1f;
 }
 
-/* --- ESTILOS INTERNOS DEL DASHBOARD --- */
-.section-title { 
-  font-size: 1.8rem; 
-  font-weight: 700; 
-  margin-bottom: 1.5rem; 
+.game-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
-.neon-card {
+.game-image span {
+  color: #444;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+}
+
+/* Bloque de textos del juego */
+.game-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  flex-grow: 1;
+}
+
+.game-info h2 {
+  font-size: 1.4rem;
+  font-weight: 700;
+  margin: 0;
+  color: #ffffff;
+}
+
+.game-info p {
+  color: #cccccc;
+  font-size: 0.95rem;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.game-info strong {
+  color: #9146ff;
+}
+
+/* Puntuaciones de prensa y comunidad a la derecha u horizontales */
+.game-scores {
+  display: flex;
+  gap: 1.5rem;
+  margin-top: 0.5rem;
+}
+
+.game-scores span {
   background-color: #1a1515;
-  border-radius: 12px;
-  padding: 2rem;
-  margin-bottom: 3rem;
-  width: 100%; 
-  box-sizing: border-box;
-  border: 1px solid rgba(145, 70, 255, 0.4);
-  box-shadow: 0 0 20px rgba(145, 70, 255, 0.15);
+  padding: 0.4rem 0.8rem;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  border: 1px solid #2a1f1f;
 }
 
-.card-header h3 { font-size: 1.2rem; font-weight: 500; }
-.card-header p { font-size: 0.8rem; color: #a1a1aa; margin-top: 0.3rem; }
-.divider { border: 0; height: 1px; background-color: #333; margin: 1.5rem 0; }
-
-/* Perfil */
-.profile-body { display: flex; gap: 3rem; align-items: flex-start; width: 100%; }
-.profile-avatar-circle { width: 160px; height: 160px; background-color: #d8c8c8; border-radius: 50%; flex-shrink: 0; }
-
-.profile-form { flex-grow: 1; display: flex; flex-direction: column; gap: 1.5rem; width: 100%; }
-.form-row { display: flex; gap: 2rem; width: 100%; }
-.input-group { display: flex; flex-direction: column; gap: 0.5rem; flex: 1; }
-.input-group label { font-size: 0.9rem; font-weight: 600; }
-.dark-input { 
-  background-color: #221a1a; border: 1px solid #444; border-radius: 8px; 
-  height: 45px; padding: 0 1rem; color: white; outline: none; width: 100%; box-sizing: border-box;
+/* Forzamos color especial para destacar las notas */
+.game-scores span:first-child {
+  color: #00ffcc; /* Color cian para prensa */
 }
-.dark-input:focus { border-color: #9146FF; }
 
-/* Lista de usuarios */
-.user-list { display: flex; flex-direction: column; gap: 1rem; width: 100%; }
-.user-list-item { 
-  display: flex; justify-content: space-between; align-items: center; 
-  background-color: #1a1515; padding: 1rem 1.5rem; border-radius: 8px; width: 100%;
-  box-sizing: border-box; border: 1px solid #2a1f1f; 
+.game-scores span:last-child {
+  color: #ff9900; /* Color naranja para comunidad */
 }
-.user-item-left { display: flex; align-items: center; gap: 1rem; flex-grow: 1; }
-.avatar-small { width: 40px; height: 40px; background-color: #e5dada; border-radius: 8px; }
-.user-name { font-size: 0.95rem; }
-
-.user-actions { display: flex; align-items: center; gap: 1rem; }
-.action-separator { width: 1px; height: 20px; background-color: #444; }
-.action-btn { background: none; border: none; color: #a1a1aa; font-size: 1.2rem; cursor: pointer; }
-.action-btn:hover { color: #ffffff; }
-.action-btn.delete:hover { color: #ff4444; }

@@ -1,0 +1,192 @@
+from fastapi import APIRouter, HTTPException
+from pydantic import BaseModel
+from typing import Optional
+from database import get_connection
+
+router = APIRouter(prefix="/api/noticia", tags=["Noticias"])
+
+
+from pydantic import BaseModel
+
+class NoticiaNueva(BaseModel):
+    titulo: str
+    contenido: str
+    imagen: str | None = ""
+    estado: str = "publicada"
+    id_autor: int  # ¡Clave! Python necesita saber que React va a enviar este número
+
+
+@router.post("/")
+def crear_noticia(noticia: NoticiaNueva):
+    """Crea una nueva noticia en MySQL."""
+    query = """
+        INSERT INTO noticia (titulo, contenido, imagen, estado, id_autor) 
+        VALUES (%s, %s, %s, %s, %s)
+    """
+    
+    connection = get_connection()
+    cursor = connection.cursor()
+
+    try:
+        valores = (
+            noticia.titulo, 
+            noticia.contenido, 
+            noticia.imagen, 
+            noticia.estado, 
+            noticia.id_autor
+        )
+        
+        cursor.execute(query, valores)
+        connection.commit()
+        
+        nuevo_id = cursor.lastrowid
+        return {"mensaje": "Noticia creada con éxito", "id_noticia": nuevo_id}
+        
+    except Exception as error:
+        connection.rollback()
+        raise HTTPException(status_code=500, detail=f"Error al crear noticia: {error}")
+    finally:
+        cursor.close()
+        connection.close()
+
+@router.get("/")
+def obtener_noticias():
+    """Devuelve todas las noticias almacenadas en MySQL."""
+    query = """
+        SELECT
+            n.id_noticia,
+            n.titulo,
+            n.contenido,
+            n.imagen,
+            n.fecha_publicacion,
+            n.estado,
+            n.id_autor,
+            u.nombre AS autor,
+            n.id_categoria,
+            c.nombre AS categoria
+        FROM noticia n
+        LEFT JOIN usuario u ON n.id_autor = u.id_usuario
+        LEFT JOIN categoria c ON n.id_categoria = c.id_categoria
+        ORDER BY n.fecha_publicacion DESC;
+    """
+
+    connection = get_connection()
+    cursor = connection.cursor(dictionary=True)
+
+    try:
+        cursor.execute(query)
+        return cursor.fetchall()
+    except Exception as error:
+        raise HTTPException(status_code=500, detail=f"Error al obtener noticias: {error}")
+    finally:
+        cursor.close()
+        connection.close()
+
+
+@router.get("/{id_noticia}")
+def obtener_noticia_por_id(id_noticia: int):
+    """Devuelve una noticia concreta por ID."""
+    query = """
+        SELECT
+            n.id_noticia,
+            n.titulo,
+            n.contenido,
+            n.imagen,
+            n.fecha_publicacion,
+            n.estado,
+            n.id_autor,
+            u.nombre AS autor,
+            n.id_categoria,
+            c.nombre AS categoria
+        FROM noticia n
+        LEFT JOIN usuario u ON n.id_autor = u.id_usuario
+        LEFT JOIN categoria c ON n.id_categoria = c.id_categoria
+        WHERE n.id_noticia = %s;
+    """
+
+    connection = get_connection()
+    cursor = connection.cursor(dictionary=True)
+
+    try:
+        cursor.execute(query, (id_noticia,))
+        noticia = cursor.fetchone()
+        if not noticia:
+            raise HTTPException(status_code=404, detail="Noticia no encontrada")
+        return noticia
+    except HTTPException:
+        raise
+    except Exception as error:
+        raise HTTPException(status_code=500, detail=f"Error al obtener noticia: {error}")
+    finally:
+        cursor.close()
+        connection.close()
+
+
+@router.put("/{id_noticia}")
+def editar_noticia(id_noticia: int, datos: NoticiaUpdate):
+    """Edita una noticia existente."""
+    query = """
+        UPDATE noticia
+        SET titulo = %s,
+            contenido = %s,
+            imagen = %s,
+            estado = %s,
+            id_categoria = %s
+        WHERE id_noticia = %s;
+    """
+
+    connection = get_connection()
+    cursor = connection.cursor()
+
+    try:
+        cursor.execute(
+            query,
+            (
+                datos.titulo,
+                datos.contenido,
+                datos.imagen,
+                datos.estado,
+                datos.id_categoria,
+                id_noticia,
+            ),
+        )
+        connection.commit()
+
+        if cursor.rowcount == 0:
+            raise HTTPException(status_code=404, detail="Noticia no encontrada")
+
+        return {"mensaje": "Noticia actualizada correctamente"}
+    except HTTPException:
+        raise
+    except Exception as error:
+        connection.rollback()
+        raise HTTPException(status_code=500, detail=f"Error al editar noticia: {error}")
+    finally:
+        cursor.close()
+        connection.close()
+
+
+@router.delete("/{id_noticia}")
+def eliminar_noticia(id_noticia: int):
+    """Elimina una noticia por ID."""
+    query = "DELETE FROM noticia WHERE id_noticia = %s;"
+
+    connection = get_connection()
+    cursor = connection.cursor()
+
+    try:
+        cursor.execute(query, (id_noticia,))
+        connection.commit()
+
+        if cursor.rowcount == 0:
+            raise HTTPException(status_code=404, detail="Noticia no encontrada")
+
+        return {"mensaje": "Noticia eliminada correctamente"}
+    except HTTPException:
+        raise
+    except Exception as error:
+        connection.rollback()
+        raise HTTPException(status_code=500, detail=f"Error al eliminar noticia: {error}")
+    finally:
+        cursor.close()
+        connection.close()

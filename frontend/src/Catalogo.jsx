@@ -1,95 +1,122 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import "/src/Catalogo.css";
 import { useNavigate } from "react-router-dom";
-// Importamos los iconos del menú y los nuevos para las acciones del Dashboard
-import {
-  FaHome,
-  FaGamepad,
-  FaNewspaper,
-  FaComments,
-  FaRegStar,
-  FaRegTrashAlt,
-} from "react-icons/fa";
-import { MdDashboard, MdOutlineModeEdit } from "react-icons/md";
+import { FaHome, FaGamepad, FaNewspaper, FaComments, FaUserCircle } from "react-icons/fa";
+import { MdDashboard } from "react-icons/md";
+
+const API_URL = "http://localhost:8000";
 
 export default function Catalogo() {
-  // Datos simulados para la lista de usuarios (sustituiremos esto con tu MySQL luego)
-  const usuarios = [
-    { id: 1, nombre: "Usuario_Gamer_01" },
-    { id: 2, nombre: "Alex_Hunter" },
-    { id: 3, nombre: "Pro_Player99" },
-  ];
+  const navigate = useNavigate();
+  const [videojuegos, setVideojuegos] = useState([]);
+  const [orden, setOrden] = useState("comunidad");
+  const [cargando, setCargando] = useState(true);
+  const [error, setError] = useState("");
 
-  const navigate = useNavigate()
+  // Comprobamos si hay usuario logueado para la parte inferior de la sidebar
+  const stringUsuario = localStorage.getItem("usuario");
+  const usuario = stringUsuario ? JSON.parse(stringUsuario) : null;
+
+  useEffect(() => {
+    const cargarRanking = async () => {
+      setCargando(true);
+      setError("");
+
+      try {
+        // Quitamos la barra del final por seguridad en el enrutado de FastAPI
+        const respuesta = await fetch(`${API_URL}/api/ranking?orden=${orden}`);
+        if (!respuesta.ok) {
+          throw new Error("No se pudo cargar el ranking");
+        }
+        const datos = await respuesta.json();
+        setVideojuegos(datos);
+      } catch (err) {
+        console.error(err);
+        setError("Error al cargar el ranking de videojuegos.");
+      } finally {
+        setCargando(false);
+      }
+    };
+
+    cargarRanking();
+  }, [orden]);
 
   return (
     <div className="layout">
-      {/* --- MENÚ LATERAL (IDÉNTICO AL HOME) --- */}
+      {/* --- MENU LATERAL --- */}
       <aside className="sidebar">
         <div className="sidebar-top">
           <h2>GAME-HUB</h2>
           <nav>
             <ul>
-              {/* Ahora navigate sí funcionará perfectamente */}
-              <li className="active" onClick={() => navigate("/")}>
-                <FaHome className="menu-icon" /> Inicio
-              </li>
-              <li onClick={() => navigate("/dashboard")}>
-                <MdDashboard className="menu-icon" /> DashBoard
-              </li>
-              <li onClick={() => navigate("/catalogo")}>
-                <FaGamepad className="menu-icon" /> Catálogo/Ranking
-              </li>
-              <li onClick={() => navigate("/Noticias")}>
-                <FaNewspaper className="menu-icon" /> Noticias
-              </li>
-              <li onClick={() => navigate("/articulo/:id")}>
-                <FaComments className="menu-icon" /> Comentarios
-              </li>
+              <li onClick={() => navigate("/")}><FaHome className="menu-icon" /> Inicio</li>
+              <li onClick={() => navigate("/dashboard")}><MdDashboard className="menu-icon" /> DashBoard</li>
+              <li className="active" onClick={() => navigate("/catalogo")}><FaGamepad className="menu-icon" /> Catálogo/Ranking</li>
+              <li onClick={() => navigate("/noticias")}><FaNewspaper className="menu-icon" /> Noticias</li>
+              <li onClick={() => navigate("/articulo/1")}><FaComments className="menu-icon" /> Comentarios</li>
             </ul>
           </nav>
         </div>
+
+        {/* Módulo inteligente de login/perfil en la barra lateral */}
         <div className="sidebar-bottom">
-          <button className="text-btn" onClick={() => navigate("/login")}>Registro</button>
-          <button className="text-btn" onClick={() => navigate("/login")}>Acceder</button>
+          {usuario ? (
+            <div className="user-logged-in" style={{ textAlign: "center", padding: "10px", width: "100%" }}>
+              <FaUserCircle size={30} style={{ color: "#9146ff", marginBottom: "5px" }} />
+              <p style={{ color: "white", margin: "0 0 10px 0", fontSize: "14px" }}>
+                Hola, <strong>{usuario.username}</strong>
+              </p>
+              <button className="text-btn" onClick={() => navigate("/dashboard")} style={{ color: "#9146ff" }}>
+                Ir a mi panel
+              </button>
+            </div>
+          ) : (
+            <>
+              <button className="text-btn" onClick={() => navigate("/registro")}>Registro</button>
+              <button className="text-btn" onClick={() => navigate("/login")}>Acceder</button>
+            </>
+          )}
         </div>
       </aside>
 
-      {/* --- CONTENIDO PRINCIPAL: DASHBOARD --- */}
+      {/* --- CONTENIDO PRINCIPAL --- */}
       <main className="main-content">
-        {/* SECCIÓN 1: PERFIL */}
-        <h1 className="section-title">Los mejores juegos </h1>
-        {/* Repetimos la tarjeta 3 veces para simular la lista */}
+        <section className="catalogo-header">
+          <h1>Los mejores juegos</h1>
+          <p>Ranking conectado a la base de datos MySQL.</p>
 
-        <div className="game-list">
-          {/* Repetimos la tarjeta 3 veces para simular la lista */}
-          {[1, 2, 3].map((item) => (
-            <section className="hero-banner">
-              <h2>The Legend of Zelda: Breath of the Wild</h2>
-              <div className="banner-img" key={item}>
-                <h1>Photo</h1>
+          <div style={{ marginBottom: "1.5rem" }}>
+            <label style={{ marginRight: "0.5rem" }}>Ordenar por:</label>
+            <select value={orden} onChange={(e) => setOrden(e.target.value)}>
+              <option value="comunidad">Nota comunidad</option>
+              <option value="prensa">Nota prensa</option>
+              <option value="titulo">Título</option>
+            </select>
+          </div>
+        </section>
+
+        {cargando && <p>Cargando ranking...</p>}
+        {error && <p style={{ color: "#ff6b6b" }}>{error}</p>}
+
+        <section className="games-list">
+          {videojuegos.map((juego, index) => (
+            <article key={juego.id_videojuego} className="game-card">
+              <div className="game-rank">#{index + 1}</div>
+              <div className="game-image">
+                {juego.imagen ? <img src={juego.imagen} alt={juego.titulo} /> : <span>Photo</span>}
               </div>
-              <div className="banner-text">
-                <p>
-                  {" "}
-                  The Legend of Zelda: Breath of the Wild abandonó el camino
-                  semilineal y casi predecible de los juegos de Zelda en 3D
-                  anteriores en favor de un enfoque nuevo y audaz: dejar que los
-                  jugadores hagan lo que quieran, como quieran y en el orden que
-                  decidan. Al combinar un enfoque abierto de la estructura de
-                  las misiones con la posibilidad de  explorar libremente un
-                  mundo vasto, bello e intrigante con pocas regulaciones
-                  específicas. El resultado es una magnífica experiencia de
-                  acción y aventura en mundo abierto que evoca la maravilla y el
-                  miedo de explorar un lugar nuevo y audaz con la tangibilidad
-                  de convertirse en su héroe. Esto es lo que hace que The Legend
-                  of Zelda: Breath of the Wild sea, no solo el mejor juego de
-                  The Legend of Zelda, sino el mejor videojuego de la historia.
-                </p>
+              <div className="game-info">
+                <h2>{juego.titulo}</h2>
+                <p>{juego.descripcion || "Sin descripción disponible."}</p>
+                <p><strong>Plataforma:</strong> {juego.plataforma || "No especificada"}</p>
+                <div className="game-scores">
+                  <span>Prensa: {juego.nota_prensa}/10</span>
+                  <span>Comunidad: {juego.nota_comunidad}/10</span>
+                </div>
               </div>
-            </section>
+            </article>
           ))}
-        </div>
+        </section>
       </main>
     </div>
   );
